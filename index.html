@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Printing Press Job Card System</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { margin: 0; background: #f4f6f9; color: #222; }
+    header { background: #1e293b; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 20px; }
+    .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+    .job-form { background: #fff; border: 2px solid #1e293b; padding: 20px; border-radius: 6px; margin-bottom: 25px; }
+    .job-form h2 { margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-size: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .field { display: flex; flex-direction: column; }
+    .field label { font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569; text-transform: uppercase; }
+    .field input, .field select, .field textarea { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
+    .full-width { grid-column: 1 / -1; }
+    .btn { background: #2563eb; color: #fff; border: none; padding: 10px 18px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 12px; }
+    .btn:hover { background: #1d4ed8; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+    .tab-btn { padding: 10px 16px; border: none; background: #e2e8f0; font-weight: bold; border-radius: 4px; cursor: pointer; }
+    .tab-btn.active { background: #1e293b; color: #fff; }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
+    .card { background: #fff; border: 1px solid #cbd5e1; border-left: 6px solid #2563eb; border-radius: 6px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; }
+    .job-no { font-weight: bold; font-size: 16px; color: #1e293b; }
+    .badge { background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .card p { margin: 5px 0; font-size: 13px; }
+    .card-actions { margin-top: 12px; padding-top: 10px; border-top: 1px dashed #cbd5e1; display: flex; gap: 6px; flex-wrap: wrap; }
+    .send-btn { background: #059669; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
+    .print-btn { background: #64748b; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+    .del-btn { background: #dc2626; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: auto; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Printing Press — Digital Job Card System</h1>
+  <span style="font-size:13px; color:#93c5fd;">5-Section Workflow</span>
+</header>
+
+<div class="container">
+  <div class="job-form">
+    <h2>Create New Printing Job Card</h2>
+    <form id="jobForm">
+      <div class="grid">
+        <div class="field">
+          <label>Job Card #</label>
+          <input type="text" id="jobNo" placeholder="e.g. JC-1001" required />
+        </div>
+        <div class="field">
+          <label>Client / Customer Name</label>
+          <input type="text" id="clientName" placeholder="Company or Person" required />
+        </div>
+        <div class="field">
+          <label>Job Title / Description</label>
+          <input type="text" id="jobTitle" placeholder="e.g. A4 Brochures / Boxes" required />
+        </div>
+        <div class="field">
+          <label>Delivery Date</label>
+          <input type="date" id="deliveryDate" required />
+        </div>
+        <div class="field">
+          <label>Paper Type & GSM</label>
+          <input type="text" id="paperSpec" placeholder="e.g. 150gsm Gloss Art" />
+        </div>
+        <div class="field">
+          <label>Cut Size & Quantity</label>
+          <input type="text" id="qtySize" placeholder="e.g. A4 - 5,000 pcs" />
+        </div>
+        <div class="field">
+          <label>Colors / Plates (CTP)</label>
+          <input type="text" id="colors" placeholder="e.g. 4 Color CMYK (4 Plates)" />
+        </div>
+        <div class="field">
+          <label>Finishing / Binding</label>
+          <input type="text" id="finishing" placeholder="e.g. Matt Lamination + Die Cut" />
+        </div>
+        <div class="field">
+          <label>Starting Section</label>
+          <select id="section">
+            <option value="1. Office">1. Office</option>
+            <option value="2. Finance">2. Finance</option>
+            <option value="3. CTP">3. CTP</option>
+            <option value="4. Production">4. Production</option>
+            <option value="5. Delivery">5. Delivery</option>
+          </select>
+        </div>
+        <div class="field full-width">
+          <label>Special Instructions / Notes</label>
+          <textarea id="notes" rows="2" placeholder="Add payment status, plate notes, or delivery address..."></textarea>
+        </div>
+      </div>
+      <button type="submit" class="btn">+ Create & Send Job Card</button>
+    </form>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="filterSection('ALL', this)">All Jobs</button>
+    <button class="tab-btn" onclick="filterSection('1. Office', this)">1. Office</button>
+    <button class="tab-btn" onclick="filterSection('2. Finance', this)">2. Finance</button>
+    <button class="tab-btn" onclick="filterSection('3. CTP', this)">3. CTP</button>
+    <button class="tab-btn" onclick="filterSection('4. Production', this)">4. Production</button>
+    <button class="tab-btn" onclick="filterSection('5. Delivery', this)">5. Delivery</button>
+    <button class="tab-btn" onclick="filterSection('Completed', this)">Completed</button>
+  </div>
+
+  <div class="cards-grid" id="cardsContainer"></div>
+</div>
+
+<script>
+  var SECTIONS = ["1. Office", "2. Finance", "3. CTP", "4. Production", "5. Delivery", "Completed"];
+  var currentFilter = "ALL";
+  var allJobs = JSON.parse(localStorage.getItem("localJobCards") || "{}");
+
+  function saveAndRender() {
+    localStorage.setItem("localJobCards", JSON.stringify(allJobs));
+    renderCards();
+  }
+
+  document.getElementById("jobForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    allJobs["job_" + Date.now()] = {
+      jobNo: document.getElementById("jobNo").value,
+      clientName: document.getElementById("clientName").value,
+      jobTitle: document.getElementById("jobTitle").value,
+      deliveryDate: document.getElementById("deliveryDate").value,
+      paperSpec: document.getElementById("paperSpec").value,
+      qtySize: document.getElementById("qtySize").value,
+      colors: document.getElementById("colors").value,
+      finishing: document.getElementById("finishing").value,
+      section: document.getElementById("section").value,
+      notes: document.getElementById("notes").value
+    };
+    saveAndRender();
+    e.target.reset();
+  });
+
+  function moveSection(id, nextSec) {
+    allJobs[id].section = nextSec;
+    saveAndRender();
+  }
+
+  function deleteJob(id) {
+    if (!confirm("Delete this job card?")) return;
+    delete allJobs[id];
+    saveAndRender();
+  }
+
+  function filterSection(sec, btn) {
+    currentFilter = sec;
+    var btns = document.querySelectorAll(".tab-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.remove("active");
+    }
+    btn.classList.add("active");
+    renderCards();
+  }
+
+  function renderCards() {
+    var container = document.getElementById("cardsContainer");
+    container.innerHTML = "";
+    var keys = Object.keys(allJobs).reverse();
+
+    for (var i = 0; i < keys.length; i++) {
+      var id = keys[i];
+      var job = allJobs[id];
+      if (currentFilter !== "ALL" && job.section !== currentFilter) continue;
+
+      var idx = SECTIONS.indexOf(job.section);
+      var nextSec = (idx >= 0 && idx < SECTIONS.length - 1) ? SECTIONS[idx + 1] : null;
+
+      var card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML =
+        '<div class="card-header">' +
+          '<span class="job-no">' + job.jobNo + ' — ' + job.clientName + '</span>' +
+          '<span class="badge">' + job.section + '</span>' +
+        '</div>' +
+        '<p><strong>Job:</strong> ' + job.jobTitle + '</p>' +
+        '<p><strong>Paper:</strong> ' + (job.paperSpec || "-") + ' | <strong>Size/Qty:</strong> ' + (job.qtySize || "-") + '</p>' +
+        '<p><strong>CTP/Colors:</strong> ' + (job.colors || "-") + ' | <strong>Finishing:</strong> ' + (job.finishing || "-") + '</p>' +
+        '<p><strong>Delivery Date:</strong> ' + (job.deliveryDate || "-") + '</p>' +
+        '<p><strong>Notes:</strong> ' + (job.notes || "None") + '</p>' +
+        '<div class="card-actions">' +
+          (nextSec ? '<button class="send-btn" onclick="moveSection(\'' + id + '\', \'' + nextSec + '\')">Send to ' + nextSec + ' ➔</button>' : '') +
+          '<button class="print-btn" onclick="window.print()">Print</button>' +
+          '<button class="del-btn" onclick="deleteJob(\'' + id + '\')">Delete</button>' +
+        '</div>';
+      container.appendChild(card);
+    }
+  }
+
+  renderCards();
+</script>
+
+</body>
+</html>
