@@ -3,60 +3,137 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Printing Press Job Card System</title>
+  <title>Printing Press — Offset & Digital Job Card System</title>
   <style>
     * { box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { margin: 0; background: #f4f6f9; color: #222; }
-    header { background: #1e293b; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { margin: 0; font-size: 20px; }
-    .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-    .job-form { background: #fff; border: 2px solid #1e293b; padding: 20px; border-radius: 6px; margin-bottom: 25px; }
-    .job-form h2 { margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-size: 18px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    body { margin: 0; background: #f1f5f9; color: #1e293b; }
+    header { background: #0f172a; color: #fff; padding: 14px 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    header h1 { margin: 0; font-size: 19px; }
+    .admin-btn { background: #f59e0b; color: #000; border: none; padding: 7px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
+    .container { max-width: 1280px; margin: 18px auto; padding: 0 15px; }
+
+    /* Admin Modal */
+    .admin-panel { display: none; background: #fffbeb; border: 2px solid #f59e0b; padding: 16px; border-radius: 6px; margin-bottom: 20px; }
+    .admin-panel h3 { margin-top: 0; color: #92400e; }
+    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-bottom: 12px; }
+    .emp-grid input { padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; }
+
+    /* Form */
+    .job-form { background: #fff; border: 2px solid #0f172a; padding: 18px; border-radius: 6px; margin-bottom: 22px; }
+    .job-form h2 { margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-size: 17px; display: flex; justify-content: space-between; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
     .field { display: flex; flex-direction: column; }
-    .field label { font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #475569; text-transform: uppercase; }
-    .field input, .field select, .field textarea { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
+    .field label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #475569; text-transform: uppercase; }
+    .field input, .field select, .field textarea { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; }
     .full-width { grid-column: 1 / -1; }
     .btn { background: #2563eb; color: #fff; border: none; padding: 10px 18px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 12px; }
     .btn:hover { background: #1d4ed8; }
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
-    .tab-btn { padding: 10px 16px; border: none; background: #e2e8f0; font-weight: bold; border-radius: 4px; cursor: pointer; }
-    .tab-btn.active { background: #1e293b; color: #fff; }
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
-    .card { background: #fff; border: 1px solid #cbd5e1; border-left: 6px solid #2563eb; border-radius: 6px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; }
-    .job-no { font-weight: bold; font-size: 16px; color: #1e293b; }
-    .badge { background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-    .card p { margin: 5px 0; font-size: 13px; }
-    .card-actions { margin-top: 12px; padding-top: 10px; border-top: 1px dashed #cbd5e1; display: flex; gap: 6px; flex-wrap: wrap; }
-    .send-btn { background: #059669; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
-    .print-btn { background: #64748b; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; }
-    .del-btn { background: #dc2626; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: auto; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tab-btn { padding: 10px 14px; border: none; background: #e2e8f0; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .tab-btn.active { background: #0f172a; color: #fff; }
+
+    /* Cards & Delivery Date Groups */
+    .date-group-header { background: #0f172a; color: #fff; padding: 8px 14px; border-radius: 4px; margin: 18px 0 10px 0; font-weight: bold; font-size: 14px; }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 15px; }
+    .card { background: #fff; border: 1px solid #cbd5e1; border-left: 6px solid #2563eb; border-radius: 6px; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .card.digital { border-left-color: #9333ea; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px; }
+    .job-no { font-weight: bold; font-size: 15px; }
+    .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .badge-offset { background: #dbeafe; color: #1e40af; }
+    .badge-digital { background: #f3e8ff; color: #6b21a8; }
+    .status-pill { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-bottom: 6px; margin-right: 5px; }
+    .inv-pending-pill { display: inline-block; background: #fee2e2; color: #b91c1c; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-bottom: 6px; }
+    .card p { margin: 4px 0; font-size: 13px; }
+    .timestamp { font-size: 11px; color: #64748b; margin-top: 6px; }
+
+    /* File Preview */
+    .attachment-box { margin-top: 8px; padding: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; }
+    .attachment-box img { max-width: 100%; max-height: 150px; display: block; margin-top: 5px; border-radius: 4px; }
+    .attachment-box a { color: #2563eb; font-weight: bold; font-size: 12px; text-decoration: none; }
+
+    /* Buttons */
+    .card-actions { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; display: flex; gap: 6px; flex-wrap: wrap; }
+    .act-btn { border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; color: #fff; text-decoration: none; display: inline-block; }
+    .btn-green { background: #059669; }
+    .btn-purple { background: #7e22ce; }
+    .btn-blue { background: #2563eb; }
+    .btn-wa { background: #16a34a; }
+    .btn-sms { background: #0284c7; }
+    .btn-call { background: #475569; }
+    .btn-del { background: #dc2626; margin-left: auto; }
+
+    @media print {
+      header, .job-form, .tabs, .card-actions, .admin-panel { display: none !important; }
+      .card { border: 2px solid #000; box-shadow: none; page-break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Printing Press — Digital Job Card System</h1>
-  <span style="font-size:13px; color:#93c5fd;">5-Section Workflow</span>
+  <h1>Printing Press — Digital & Offset Job Card System</h1>
+  <div>
+    <span id="syncStatus" style="font-size:12px; color:#86efac; margin-right:10px;">Local Mode</span>
+    <span id="clockDisplay" style="font-size:12px; color:#93c5fd; margin-right:12px;"></span>
+    <button class="admin-btn" onclick="openReknaazAdmin()">Reknaaz Admin (Employees / Reset Serial)</button>
+  </div>
 </header>
 
 <div class="container">
+  <!-- REKNAAZ ONLY ADMIN PANEL -->
+  <div class="admin-panel" id="adminPanel">
+    <h3>Reknaaz Admin Controls</h3>
+    <p style="font-size:12px; margin-top:0;">Edit the 13 Employee Names below:</p>
+    <div class="emp-grid" id="empInputs"></div>
+    <button class="act-btn btn-green" onclick="saveEmployees()">Save Employee Names</button>
+    <button class="act-btn btn-del" onclick="resetSerialNumber()" style="margin-left:10px;">Reset Job Card Serial to JC-1001</button>
+    <button class="act-btn btn-call" onclick="document.getElementById('adminPanel').style.display='none'" style="margin-left:10px;">Close</button>
+  </div>
+
+  <!-- CREATE JOB CARD FORM -->
   <div class="job-form">
-    <h2>Create New Printing Job Card</h2>
+    <h2>
+      <span>Create New Job Card</span>
+      <span id="nextSerialBadge" style="color:#2563eb; font-size:15px;">Next Card: JC-1001</span>
+    </h2>
     <form id="jobForm">
       <div class="grid">
         <div class="field">
-          <label>Job Card #</label>
-          <input type="text" id="jobNo" placeholder="e.g. JC-1001" required />
+          <label>Job Type (Workflow)</label>
+          <select id="jobType" required>
+            <option value="Offset">Offset Work</option>
+            <option value="Digital">Digital Work</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Created By (Section)</label>
+          <select id="createdBySection">
+            <option value="Office">Office</option>
+            <option value="Production">Production</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Assigned Employee (13 Staff)</label>
+          <select id="employeeSelect"></select>
+        </div>
+        <div class="field">
+          <label>Invoice Number (Optional — Finance can add later)</label>
+          <input type="text" id="invoiceNo" placeholder="Leave empty if invoice not ready yet" />
         </div>
         <div class="field">
           <label>Client / Customer Name</label>
-          <input type="text" id="clientName" placeholder="Company or Person" required />
+          <input type="text" id="clientName" placeholder="Client Name" required />
+        </div>
+        <div class="field">
+          <label>Client Phone (For WhatsApp / SMS / Call)</label>
+          <input type="tel" id="clientPhone" placeholder="e.g. 23057000000" required />
         </div>
         <div class="field">
           <label>Job Title / Description</label>
-          <input type="text" id="jobTitle" placeholder="e.g. A4 Brochures / Boxes" required />
+          <input type="text" id="jobTitle" placeholder="e.g. Flyers, Boxes, Stickers" required />
         </div>
         <div class="field">
           <label>Delivery Date</label>
@@ -64,135 +141,447 @@
         </div>
         <div class="field">
           <label>Paper Type & GSM</label>
-          <input type="text" id="paperSpec" placeholder="e.g. 150gsm Gloss Art" />
+          <input type="text" id="paperSpec" placeholder="e.g. 150gsm Gloss / 300gsm Matt" />
         </div>
         <div class="field">
           <label>Cut Size & Quantity</label>
-          <input type="text" id="qtySize" placeholder="e.g. A4 - 5,000 pcs" />
+          <input type="text" id="qtySize" placeholder="e.g. A4 - 2,000 pcs" />
         </div>
         <div class="field">
-          <label>Colors / Plates (CTP)</label>
-          <input type="text" id="colors" placeholder="e.g. 4 Color CMYK (4 Plates)" />
+          <label>Colors / Plates / Finishing</label>
+          <input type="text" id="specs" placeholder="e.g. 4 Color CMYK + Lamination" />
         </div>
         <div class="field">
-          <label>Finishing / Binding</label>
-          <input type="text" id="finishing" placeholder="e.g. Matt Lamination + Die Cut" />
-        </div>
-        <div class="field">
-          <label>Starting Section</label>
-          <select id="section">
-            <option value="1. Office">1. Office</option>
-            <option value="2. Finance">2. Finance</option>
-            <option value="3. CTP">3. CTP</option>
-            <option value="4. Production">4. Production</option>
-            <option value="5. Delivery">5. Delivery</option>
-          </select>
+          <label>Attach Artwork / Proof (PDF or JPG)</label>
+          <input type="file" id="fileAttachment" accept=".pdf,.jpg,.jpeg,.png" />
         </div>
         <div class="field full-width">
           <label>Special Instructions / Notes</label>
-          <textarea id="notes" rows="2" placeholder="Add payment status, plate notes, or delivery address..."></textarea>
+          <textarea id="notes" rows="2" placeholder="Add notes for Finance, CTP, Production, or Delivery..."></textarea>
         </div>
       </div>
-      <button type="submit" class="btn">+ Create & Send Job Card</button>
+      <button type="submit" class="btn">+ Save & Send Job Card</button>
     </form>
   </div>
 
+  <!-- SECTION TABS -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="filterSection('ALL', this)">All Jobs</button>
-    <button class="tab-btn" onclick="filterSection('1. Office', this)">1. Office</button>
-    <button class="tab-btn" onclick="filterSection('2. Finance', this)">2. Finance</button>
-    <button class="tab-btn" onclick="filterSection('3. CTP', this)">3. CTP</button>
-    <button class="tab-btn" onclick="filterSection('4. Production', this)">4. Production</button>
-    <button class="tab-btn" onclick="filterSection('5. Delivery', this)">5. Delivery</button>
-    <button class="tab-btn" onclick="filterSection('Completed', this)">Completed</button>
+    <button class="tab-btn active" onclick="filterTab('ALL', this)">All Active Jobs</button>
+    <button class="tab-btn" onclick="filterTab('Finance', this)">Finance (Pending Invoice)</button>
+    <button class="tab-btn" onclick="filterTab('CTP', this)">CTP (Plates)</button>
+    <button class="tab-btn" onclick="filterTab('DigitalQueue', this)">Digital Work Queue</button>
+    <button class="tab-btn" onclick="filterTab('Production', this)">Production</button>
+    <button class="tab-btn" onclick="filterTab('Delivery', this)">Delivery (By Date)</button>
+    <button class="tab-btn" onclick="filterTab('Delivered', this)">Completed / Delivered</button>
   </div>
 
-  <div class="cards-grid" id="cardsContainer"></div>
+  <div id="cardsWrapper"></div>
 </div>
 
-<script>
-  var SECTIONS = ["1. Office", "2. Finance", "3. CTP", "4. Production", "5. Delivery", "Completed"];
-  var currentFilter = "ALL";
-  var allJobs = JSON.parse(localStorage.getItem("localJobCards") || "{}");
+<!-- FIREBASE SDK FOR LIVE SYNC ACROSS ALL 5 SECTIONS -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
-  function saveAndRender() {
-    localStorage.setItem("localJobCards", JSON.stringify(allJobs));
-    renderCards();
+<script>
+  // =========================================================================
+  // 1. PASTE YOUR FIREBASE CONFIG BELOW TO SYNC LIVE ACROSS ALL 5 COMPUTERS:
+  // =========================================================================
+  var firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "0000000000",
+    appId: "1:0000000000:web:0000000000"
+  };
+
+  // 2. REKNAAZ ADMIN PASSWORD:
+  var REKNAAZ_PASS = "reknaaz123";
+
+  var defaultEmployees = [
+    "Reknaaz", "Employee 2", "Employee 3", "Employee 4", "Employee 5",
+    "Employee 6", "Employee 7", "Employee 8", "Employee 9", "Employee 10",
+    "Employee 11", "Employee 12", "Employee 13"
+  ];
+
+  var useFirebase = (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY");
+  var db = null;
+
+  var employees = JSON.parse(localStorage.getItem("pressEmployees") || JSON.stringify(defaultEmployees));
+  var serialCounter = parseInt(localStorage.getItem("pressSerial") || "1001", 10);
+  var allJobs = JSON.parse(localStorage.getItem("pressJobsV2") || "{}");
+  var currentTab = "ALL";
+
+  if (useFirebase) {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    document.getElementById("syncStatus").textContent = "LIVE ONLINE SYNC";
+
+    db.ref("pressJobs").on("value", function(snap) {
+      allJobs = snap.val() || {};
+      renderCards();
+    });
+
+    db.ref("pressMeta/serialCounter").on("value", function(snap) {
+      if (snap.val()) {
+        serialCounter = parseInt(snap.val(), 10);
+        updateUIHelpers();
+      }
+    });
+
+    db.ref("pressMeta/employees").on("value", function(snap) {
+      if (snap.val()) {
+        employees = snap.val();
+        updateUIHelpers();
+      }
+    });
+  }
+
+  setInterval(function() {
+    document.getElementById("clockDisplay").textContent = new Date().toLocaleString();
+  }, 1000);
+
+  function updateUIHelpers() {
+    document.getElementById("nextSerialBadge").textContent = "Next Card: JC-" + serialCounter;
+    var sel = document.getElementById("employeeSelect");
+    sel.innerHTML = "";
+    for (var i = 0; i < employees.length; i++) {
+      var opt = document.createElement("option");
+      opt.value = employees[i];
+      opt.textContent = (i + 1) + ". " + employees[i];
+      sel.appendChild(opt);
+    }
+  }
+
+  function openReknaazAdmin() {
+    var pwd = prompt("Enter Reknaaz Admin Password:");
+    if (pwd !== REKNAAZ_PASS) {
+      alert("Access Denied. Only Reknaaz can access this panel.");
+      return;
+    }
+    var container = document.getElementById("empInputs");
+    container.innerHTML = "";
+    for (var i = 0; i < 13; i++) {
+      var inp = document.createElement("input");
+      inp.type = "text";
+      inp.id = "emp_" + i;
+      inp.value = employees[i] || ("Employee " + (i + 1));
+      container.appendChild(inp);
+    }
+    document.getElementById("adminPanel").style.display = "block";
+  }
+
+  function saveEmployees() {
+    var updated = [];
+    for (var i = 0; i < 13; i++) {
+      updated.push(document.getElementById("emp_" + i).value.trim() || ("Employee " + (i + 1)));
+    }
+    employees = updated;
+    if (useFirebase) {
+      db.ref("pressMeta/employees").set(employees);
+    } else {
+      localStorage.setItem("pressEmployees", JSON.stringify(employees));
+      updateUIHelpers();
+    }
+    alert("13 Employee names saved!");
+  }
+
+  function resetSerialNumber() {
+    if (!confirm("Reset Job Card serial numbering back to JC-1001?")) return;
+    serialCounter = 1001;
+    if (useFirebase) {
+      db.ref("pressMeta/serialCounter").set(1001);
+    } else {
+      localStorage.setItem("pressSerial", serialCounter);
+      updateUIHelpers();
+    }
+    alert("Job Card serial reset to JC-1001.");
+  }
+
+  function saveJobRecord(jobId, jobObj) {
+    if (useFirebase) {
+      db.ref("pressJobs/" + jobId).set(jobObj);
+    } else {
+      allJobs[jobId] = jobObj;
+      localStorage.setItem("pressJobsV2", JSON.stringify(allJobs));
+      renderCards();
+    }
+  }
+
+  function updateJobFields(jobId, updates) {
+    if (useFirebase) {
+      db.ref("pressJobs/" + jobId).update(updates);
+    } else {
+      for (var k in updates) {
+        allJobs[jobId][k] = updates[k];
+      }
+      localStorage.setItem("pressJobsV2", JSON.stringify(allJobs));
+      renderCards();
+    }
   }
 
   document.getElementById("jobForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    allJobs["job_" + Date.now()] = {
-      jobNo: document.getElementById("jobNo").value,
-      clientName: document.getElementById("clientName").value,
-      jobTitle: document.getElementById("jobTitle").value,
-      deliveryDate: document.getElementById("deliveryDate").value,
-      paperSpec: document.getElementById("paperSpec").value,
-      qtySize: document.getElementById("qtySize").value,
-      colors: document.getElementById("colors").value,
-      finishing: document.getElementById("finishing").value,
-      section: document.getElementById("section").value,
-      notes: document.getElementById("notes").value
-    };
-    saveAndRender();
-    e.target.reset();
+    var fileInput = document.getElementById("fileAttachment");
+    var file = (fileInput.files && fileInput.files.length > 0) ? fileInput.files.item(0) : null;
+
+    function finalizeCreate(fileData, fileName, fileType) {
+      var jobType = document.getElementById("jobType").value;
+      var inv = document.getElementById("invoiceNo").value.trim();
+      var hasInvoice = inv.length > 0;
+      var nowStr = new Date().toLocaleString();
+
+      var needsFinance = !hasInvoice;
+      var inCTP = (jobType === "Offset");
+      var inDigitalQueue = (jobType === "Digital");
+
+      var jobId = "job_" + Date.now();
+      var newJob = {
+        jobNo: "JC-" + serialCounter,
+        jobType: jobType,
+        createdBy: document.getElementById("createdBySection").value,
+        employee: document.getElementById("employeeSelect").value,
+        invoiceNo: inv,
+        needsFinance: needsFinance,
+        inCTP: inCTP,
+        platesReady: false,
+        inDigitalQueue: inDigitalQueue,
+        inProduction: false,
+        inDelivery: false,
+        delivered: false,
+        clientName: document.getElementById("clientName").value,
+        clientPhone: document.getElementById("clientPhone").value.replace(/[^0-9]/g, ""),
+        jobTitle: document.getElementById("jobTitle").value,
+        deliveryDate: document.getElementById("deliveryDate").value,
+        paperSpec: document.getElementById("paperSpec").value,
+        qtySize: document.getElementById("qtySize").value,
+        specs: document.getElementById("specs").value,
+        notes: document.getElementById("notes").value,
+        fileData: fileData || "",
+        fileName: fileName || "",
+        fileType: fileType || "",
+        createdAt: nowStr,
+        lastUpdated: nowStr
+      };
+
+      serialCounter++;
+      if (useFirebase) {
+        db.ref("pressMeta/serialCounter").set(serialCounter);
+      } else {
+        localStorage.setItem("pressSerial", serialCounter);
+        updateUIHelpers();
+      }
+
+      saveJobRecord(jobId, newJob);
+      e.target.reset();
+    }
+
+    if (file) {
+      var reader = new FileReader();
+      reader.onload = function(evt) {
+        finalizeCreate(evt.target.result, file.name, file.type);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      finalizeCreate("", "", "");
+    }
   });
 
-  function moveSection(id, nextSec) {
-    allJobs[id].section = nextSec;
-    saveAndRender();
+  function financeAddInvoice(id) {
+    var inv = prompt("Enter Invoice Number:");
+    if (!inv) return;
+    updateJobFields(id, {
+      invoiceNo: inv.trim(),
+      needsFinance: false,
+      lastUpdated: "Invoice added (" + inv.trim() + "): " + new Date().toLocaleString()
+    });
+  }
+
+  function ctpPlatesReady(id) {
+    updateJobFields(id, {
+      platesReady: true,
+      inCTP: false,
+      inProduction: true,
+      lastUpdated: "Plates Ready -> Production: " + new Date().toLocaleString()
+    });
+  }
+
+  function digitalSendProduction(id) {
+    updateJobFields(id, {
+      inDigitalQueue: false,
+      inProduction: true,
+      lastUpdated: "Sent to Production: " + new Date().toLocaleString()
+    });
+  }
+
+  function digitalWorkFinish(id) {
+    updateJobFields(id, {
+      inDigitalQueue: false,
+      inProduction: false,
+      inDelivery: true,
+      lastUpdated: "Digital Finish -> Delivery: " + new Date().toLocaleString()
+    });
+  }
+
+  function productionToDelivery(id) {
+    updateJobFields(id, {
+      inProduction: false,
+      inDelivery: true,
+      lastUpdated: "Production Done -> Delivery: " + new Date().toLocaleString()
+    });
+  }
+
+  function markDelivered(id) {
+    updateJobFields(id, {
+      inDelivery: false,
+      delivered: true,
+      lastUpdated: "Delivered: " + new Date().toLocaleString()
+    });
   }
 
   function deleteJob(id) {
     if (!confirm("Delete this job card?")) return;
-    delete allJobs[id];
-    saveAndRender();
+    if (useFirebase) {
+      db.ref("pressJobs/" + id).remove();
+    } else {
+      delete allJobs[id];
+      localStorage.setItem("pressJobsV2", JSON.stringify(allJobs));
+      renderCards();
+    }
   }
 
-  function filterSection(sec, btn) {
-    currentFilter = sec;
+  function filterTab(tab, btn) {
+    currentTab = tab;
     var btns = document.querySelectorAll(".tab-btn");
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].classList.remove("active");
-    }
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove("active");
     btn.classList.add("active");
     renderCards();
   }
 
-  function renderCards() {
-    var container = document.getElementById("cardsContainer");
-    container.innerHTML = "";
-    var keys = Object.keys(allJobs).reverse();
+  function buildCardHTML(id, job) {
+    var workStage = "Completed";
+    if (job.inCTP) workStage = "CTP (Making Plates)";
+    else if (job.inDigitalQueue) workStage = "Digital Work Queue";
+    else if (job.inProduction) workStage = "In Production";
+    else if (job.inDelivery) workStage = "Ready for Delivery";
+    else if (job.delivered) workStage = "Delivered";
 
-    for (var i = 0; i < keys.length; i++) {
-      var id = keys[i];
-      var job = allJobs[id];
-      if (currentFilter !== "ALL" && job.section !== currentFilter) continue;
+    var attachmentHTML = "";
+    if (job.fileData) {
+      if (job.fileType && job.fileType.indexOf("image") !== -1) {
+        attachmentHTML = '<div class="attachment-box"><a href="' + job.fileData + '" download="' + job.fileName + '">Download JPG: ' + job.fileName + '</a><img src="' + job.fileData + '" /></div>';
+      } else {
+        attachmentHTML = '<div class="attachment-box"><a href="' + job.fileData + '" target="_blank" download="' + job.fileName + '">Open / Download PDF: ' + job.fileName + '</a></div>';
+      }
+    }
 
-      var idx = SECTIONS.indexOf(job.section);
-      var nextSec = (idx >= 0 && idx < SECTIONS.length - 1) ? SECTIONS[idx + 1] : null;
+    var contactHTML = "";
+    if (job.inDelivery && job.clientPhone) {
+      var msg = encodeURIComponent("Hello " + job.clientName + ", your printing order (" + job.jobNo + " - " + job.jobTitle + ") is ready for delivery.");
+      contactHTML =
+        '<a class="act-btn btn-wa" href="https://wa.me/' + job.clientPhone + '?text=' + msg + '" target="_blank">WhatsApp</a>' +
+        '<a class="act-btn btn-sms" href="sms:+' + job.clientPhone + '?body=' + msg + '">SMS</a>' +
+        '<a class="act-btn btn-call" href="tel:+' + job.clientPhone + '">Call</a>';
+    }
 
-      var card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML =
+    var actionsHTML = "";
+    if (job.needsFinance) {
+      actionsHTML += '<button class="act-btn btn-blue" onclick="financeAddInvoice(\'' + id + '\')">+ Add Invoice (Finance)</button>';
+    }
+    if (job.inCTP) {
+      actionsHTML += '<button class="act-btn btn-green" onclick="ctpPlatesReady(\'' + id + '\')">Plates Ready ➔ Production</button>';
+    }
+    if (job.inDigitalQueue) {
+      actionsHTML += '<button class="act-btn btn-blue" onclick="digitalSendProduction(\'' + id + '\')">Send to Production ➔</button>';
+      actionsHTML += '<button class="act-btn btn-purple" onclick="digitalWorkFinish(\'' + id + '\')">Work Finish ➔ Delivery</button>';
+    }
+    if (job.inProduction) {
+      actionsHTML += '<button class="act-btn btn-green" onclick="productionToDelivery(\'' + id + '\')">Send to Delivery ➔</button>';
+    }
+    if (job.inDelivery) {
+      actionsHTML += contactHTML;
+      actionsHTML += '<button class="act-btn btn-green" onclick="markDelivered(\'' + id + '\')">Mark Delivered</button>';
+    }
+
+    return (
+      '<div class="card ' + (job.jobType === "Digital" ? "digital" : "") + '">' +
         '<div class="card-header">' +
           '<span class="job-no">' + job.jobNo + ' — ' + job.clientName + '</span>' +
-          '<span class="badge">' + job.section + '</span>' +
+          '<span class="badge ' + (job.jobType === "Digital" ? "badge-digital" : "badge-offset") + '">' + job.jobType + '</span>' +
         '</div>' +
-        '<p><strong>Job:</strong> ' + job.jobTitle + '</p>' +
+        '<div>' +
+          '<span class="status-pill">Stage: ' + workStage + '</span>' +
+          (job.needsFinance ? '<span class="inv-pending-pill">Finance: Invoice Pending</span>' : '') +
+        '</div>' +
+        '<p><strong>Job:</strong> ' + job.jobTitle + ' | <strong>Delivery Date:</strong> ' + job.deliveryDate + '</p>' +
+        '<p><strong>Invoice:</strong> ' + (job.invoiceNo ? job.invoiceNo : "<span style='color:#b91c1c;'>Pending (Work Continuing)</span>") + ' | <strong>Staff:</strong> ' + job.employee + ' (' + job.createdBy + ')</p>' +
         '<p><strong>Paper:</strong> ' + (job.paperSpec || "-") + ' | <strong>Size/Qty:</strong> ' + (job.qtySize || "-") + '</p>' +
-        '<p><strong>CTP/Colors:</strong> ' + (job.colors || "-") + ' | <strong>Finishing:</strong> ' + (job.finishing || "-") + '</p>' +
-        '<p><strong>Delivery Date:</strong> ' + (job.deliveryDate || "-") + '</p>' +
+        '<p><strong>Specs:</strong> ' + (job.specs || "-") + ' | <strong>Phone:</strong> ' + (job.clientPhone || "-") + '</p>' +
         '<p><strong>Notes:</strong> ' + (job.notes || "None") + '</p>' +
+        attachmentHTML +
+        '<div class="timestamp">Created: ' + job.createdAt + '<br>Updated: ' + job.lastUpdated + '</div>' +
         '<div class="card-actions">' +
-          (nextSec ? '<button class="send-btn" onclick="moveSection(\'' + id + '\', \'' + nextSec + '\')">Send to ' + nextSec + ' ➔</button>' : '') +
-          '<button class="print-btn" onclick="window.print()">Print</button>' +
-          '<button class="del-btn" onclick="deleteJob(\'' + id + '\')">Delete</button>' +
-        '</div>';
-      container.appendChild(card);
-    }
+          actionsHTML +
+          '<button class="act-btn btn-call" onclick="window.print()">Print</button>' +
+          '<button class="act-btn btn-del" onclick="deleteJob(\'' + id + '\')">Delete</button>' +
+        '</div>' +
+      '</div>'
+    );
   }
 
+  function renderCards() {
+    var wrapper = document.getElementById("cardsWrapper");
+    wrapper.innerHTML = "";
+    var keys = Object.keys(allJobs).reverse();
+
+    var filtered = [];
+    for (var i = 0; i < keys.length; i++) {
+      var id = keys[i];
+      var j = allJobs[id];
+      if (!j) continue;
+      if (currentTab === "ALL" && (!j.delivered || j.needsFinance)) filtered.push({ id: id, job: j });
+      else if (currentTab === "Finance" && j.needsFinance) filtered.push({ id: id, job: j });
+      else if (currentTab === "CTP" && j.inCTP) filtered.push({ id: id, job: j });
+      else if (currentTab === "DigitalQueue" && j.inDigitalQueue) filtered.push({ id: id, job: j });
+      else if (currentTab === "Production" && j.inProduction) filtered.push({ id: id, job: j });
+      else if (currentTab === "Delivery" && j.inDelivery) filtered.push({ id: id, job: j });
+      else if (currentTab === "Delivered" && j.delivered) filtered.push({ id: id, job: j });
+    }
+
+    if (currentTab === "Delivery") {
+      var groups = {};
+      for (var k = 0; k < filtered.length; k++) {
+        var dDate = filtered[k].job.deliveryDate || "No Date";
+        if (!groups[dDate]) groups[dDate] = [];
+        groups[dDate].push(filtered[k]);
+      }
+      var dates = Object.keys(groups).sort();
+      for (var d = 0; d < dates.length; d++) {
+        var header = document.createElement("div");
+        header.className = "date-group-header";
+        header.textContent = "Delivery Date: " + dates[d] + " (" + groups[dates[d]].length + " Jobs)";
+        wrapper.appendChild(header);
+
+        var grid = document.createElement("div");
+        grid.className = "cards-grid";
+        for (var g = 0; g < groups[dates[d]].length; g++) {
+          grid.innerHTML += buildCardHTML(groups[dates[d]][g].id, groups[dates[d]][g].job);
+        }
+        wrapper.appendChild(grid);
+      }
+      return;
+    }
+
+    var grid = document.createElement("div");
+    grid.className = "cards-grid";
+    for (var m = 0; m < filtered.length; m++) {
+      grid.innerHTML += buildCardHTML(filtered[m].id, filtered[m].job);
+    }
+    wrapper.appendChild(grid);
+  }
+
+  updateUIHelpers();
   renderCards();
 </script>
 
