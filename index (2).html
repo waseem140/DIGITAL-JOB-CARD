@@ -1,373 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Northern Printing — Job Card System</title>
-<style>
-*{box-sizing:border-box;font-family:Arial,sans-serif}
-body{margin:0;background:#f1f5f9;color:#1e293b}
-header{background:#0f172a;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-header h1{margin:0;font-size:18px}
-.badge-live{background:#10b981;color:#fff;font-size:11px;padding:3px 8px;border-radius:12px;margin-left:8px;vertical-align:middle}
-.adm{background:#f59e0b;color:#000;border:0;padding:6px 12px;border-radius:4px;font-weight:700;cursor:pointer;font-size:12px}
-.notif-btn{background:#2563eb;color:#fff;border:0;padding:6px 12px;border-radius:4px;font-weight:700;cursor:pointer;font-size:12px;margin-right:6px}
-.box{max-width:1250px;margin:15px auto;padding:0 12px}
-.panel{background:#fff;border:2px solid #0f172a;padding:15px;border-radius:6px;margin-bottom:18px}
-#adminBox{display:none;background:#fffbeb;border-color:#f59e0b}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-.fld{display:flex;flex-direction:column}
-.fld label{font-size:11px;font-weight:700;margin-bottom:3px;color:#475569;text-transform:uppercase}
-.fld input,.fld select,.fld textarea{padding:7px;border:1px solid #cbd5e1;border-radius:4px;font-size:13px}
-.span2{grid-column:span 2}
-.full{grid-column:1/-1}
-.btn{background:#2563eb;color:#fff;border:0;padding:9px 16px;font-weight:700;border-radius:4px;cursor:pointer;margin-top:10px}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.tab{padding:9px 13px;border:0;background:#e2e8f0;font-weight:700;border-radius:4px;cursor:pointer;font-size:12px}
-.tab.active{background:#0f172a;color:#fff}
-.dt-hdr{background:#0f172a;color:#fff;padding:7px 12px;border-radius:4px;margin:14px 0 8px;font-weight:700;font-size:13px}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
-.card{background:#fff;border:1px solid #cbd5e1;border-left:6px solid #2563eb;border-radius:6px;padding:12px}
-.card.dig{border-left-color:#9333ea}
-.chdr{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:6px;font-weight:700}
-.pill{display:inline-block;background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;margin:0 4px 5px 0}
-.pill.red{background:#fee2e2;color:#b91c1c}
-.card p{margin:3px 0;font-size:13px}
-.ts{font-size:11px;color:#64748b;margin-top:5px}
-.att{margin-top:6px;padding:6px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px}
-.att img{max-width:100%;max-height:140px;display:block;margin-top:4px}
-.acts{margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1;display:flex;gap:5px;flex-wrap:wrap}
-.ab{border:0;padding:5px 9px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:700;color:#fff;text-decoration:none}
-#toast{position:fixed;top:16px;right:16px;background:#0f172a;color:#fff;border-left:5px solid #10b981;padding:14px 18px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.3);font-size:13px;font-weight:700;display:none;z-index:9999}
-@media print{header,.panel,.tabs,.acts,#toast{display:none!important}.card{border:2px solid #000}}
-</style>
-</head>
-<body>
-<div id="toast"></div>
-<header>
-  <h1>Northern Printing — Job Card System <span id="syncStatus" class="badge-live">Connecting...</span></h1>
-  <div>
-    <span id="clk" style="font-size:12px;color:#93c5fd;margin-right:10px"></span>
-    <button class="notif-btn" onclick="enableNotif()">Enable Sound Alerts</button>
-    <button class="adm" onclick="openAdm()">Reknaaz Admin</button>
-  </div>
-</header>
-<div class="box">
-  <div class="panel" id="adminBox">
-    <h3 style="margin-top:0;color:#92400e">Reknaaz Admin — Edit 13 Employees, Reset Serial & Unlock Delete</h3>
-    <div class="grid" id="empList"></div>
-    <button class="ab" style="background:#059669;margin-top:10px" onclick="saveEmp()">Save Employees (All Devices)</button>
-    <button class="ab" style="background:#dc2626;margin-top:10px" onclick="resetSer()">Reset Serial (JC-1001)</button>
-    <button class="ab" style="background:#475569;margin-top:10px" onclick="closeAdm()">Lock & Close Admin</button>
-  </div>
-  <div class="panel">
-    <h2 style="margin-top:0;font-size:16px;display:flex;justify-content:space-between"><span>New Job Card</span><span id="serBadge" style="color:#2563eb">Next: JC-1001</span></h2>
-    <form id="jForm">
-      <div class="grid">
-        <div class="fld"><label>Work Type</label><select id="jType"><option value="Offset">Offset Work</option><option value="Digital">Digital Work</option></select></div>
-        <div class="fld"><label>Created By</label><select id="bySec"><option>Office</option><option>Production</option></select></div>
-        <div class="fld"><label>Staff (13)</label><select id="empSel"></select></div>
-        <div class="fld"><label>Invoice # (Optional)</label><input id="invNo" placeholder="Blank = Pending Finance"></div>
-        <div class="fld"><label>Client Name</label><input id="cName" required></div>
-        <div class="fld"><label>Client Phone (+230)</label><input id="cPhone" placeholder="e.g. 57000000" required></div>
-        <div class="fld"><label>Delivery Date</label><input type="date" id="dDate" required></div>
-        <div class="fld"><label>Paper & GSM</label><input id="paper"></div>
-        <div class="fld"><label>Size & Quantity</label><input id="qty"></div>
-        <div class="fld"><label>Colors / Finishing</label><input id="specs"></div>
-        <div class="fld"><label>Attach PDF / JPG (Max 1.5MB)</label><input type="file" id="fAtt" accept=".pdf,.jpg,.jpeg,.png"></div>
-        <div class="fld span2"><label>Job Title / Full Description</label><textarea id="jTitle" rows="3" placeholder="Enter full job title and printing details..." required></textarea></div>
-        <div class="fld full"><label>Special Notes</label><textarea id="notes" rows="2"></textarea></div>
-      </div>
-      <button type="submit" class="btn" id="subBtn">+ Save & Send Job Card</button>
-    </form>
-  </div>
-  <div class="tabs">
-    <button class="tab active" onclick="setTab('ALL',this)">All Active</button>
-    <button class="tab" onclick="setTab('FIN',this)">Finance (No Invoice)</button>
-    <button class="tab" onclick="setTab('CTP',this)">CTP (Plates)</button>
-    <button class="tab" onclick="setTab('DIG',this)">Digital Queue</button>
-    <button class="tab" onclick="setTab('PRD',this)">Production</button>
-    <button class="tab" onclick="setTab('DEL',this)">Delivery (By Date)</button>
-    <button class="tab" onclick="setTab('DONE',this)">Delivered</button>
-  </div>
-  <div id="wrap"></div>
-</div>
 <script>
-var DB_URL = "https://northern-printing-default-rtdb.firebaseio.com";
-var PASS = "reknaaz123";
-var isAdmin = false;
-var defEmp = ["Reknaaz","Emp 2","Emp 3","Emp 4","Emp 5","Emp 6","Emp 7","Emp 8","Emp 9","Emp 10","Emp 11","Emp 12","Emp 13"];
-var emps = defEmp.slice();
-var ser = 1001;
-var jobs = {};
-var tab = "ALL";
-var lastSig = "";
-var firstLoad = true;
-
-setInterval(function(){document.getElementById("clk").textContent = new Date().toLocaleString();}, 1000);
-
-function enableNotif(){
-  if("Notification" in window) Notification.requestPermission();
-  notify("Sound & Screen Alerts Enabled for this computer!");
-}
-
-function beep(){
-  try{
-    var c = new (window.AudioContext || window.webkitAudioContext)();
-    var o = c.createOscillator();
-    var g = c.createGain();
-    o.connect(g); g.connect(c.destination);
-    o.frequency.value = 880; g.gain.value = 0.2;
-    o.start(); setTimeout(function(){o.stop();}, 260);
-  }catch(e){}
-}
-
+var DB="https://firebaseio.com",PASS="reknaaz123",isAdmin=false,tab="ALL",lastSig="",firstLoad=true;
+var emps=["Reknaaz","Emp 2","Emp 3","Emp 4","Emp 5","Emp 6","Emp 7","Emp 8","Emp 9","Emp 10","Emp 11","Emp 12","Emp 13"],ser=1001,jobs={};
+function enableNotif(){if("Notification"in window)Notification.requestPermission();notify("Sound & Screen Alerts Enabled!")}
+function beep(){try{var c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=0.15;o.start();setTimeout(function(){o.stop()},220)}catch(e){}}
 function notify(msg){
-  beep();
-  var t = document.getElementById("toast");
-  t.textContent = "Alert: " + msg;
-  t.style.display = "block";
-  clearTimeout(window._tt);
-  window._tt = setTimeout(function(){t.style.display = "none";}, 6000);
-  if("Notification" in window && Notification.permission === "granted"){
-    new Notification("Northern Printing — Job Alert", {body: msg});
-  }
+  beep();var t=document.getElementById("toast");t.textContent="Alert: "+msg;t.style.display="block";
+  clearTimeout(window._tt);window._tt=setTimeout(function(){t.style.display="none"},5000);
+  if("Notification"in window&&Notification.permission==="granted")new Notification("Northern Printing Alert",{body:msg});
 }
-
-function dbPut(path, data){
-  return fetch(DB_URL + path + ".json", {
-    method: "PUT",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(data)
+function pull(){
+  fetch(DB+"/.json").then(function(r){return r.json()}).then(function(d){
+    d=d||{};
+    if(Array.isArray(d.emps)&&d.emps.length===13)emps=d.emps;
+    if(d.ser)ser=d.ser;
+    var nj=d.jobs||{};
+    var sig=JSON.stringify(nj);
+    if(!firstLoad&&sig!==lastSig)notify("Job Card Updated!");
+    firstLoad=false;lastSig=sig;jobs=nj;refreshUI();render();
   });
 }
-
-function dbPatch(path, data){
-  return fetch(DB_URL + path + ".json", {
-    method: "PATCH",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(data)
-  });
-}
-
-function dbDelete(path){
-  return fetch(DB_URL + path + ".json", {method: "DELETE"});
-}
-
-function syncLoop(){
-  fetch(DB_URL + "/npData.json")
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      document.getElementById("syncStatus").textContent = "LIVE SYNC ON";
-      document.getElementById("syncStatus").style.background = "#10b981";
-      d = d || {};
-      var newEmps = Array.isArray(d.emps) && d.emps.length === 13 ? d.emps : defEmp.slice();
-      var newSer = typeof d.ser === "number" ? d.ser : 1001;
-      var newJobs = d.jobs || {};
-      var newAlert = d.lastAlert || "";
-
-      var sig = JSON.stringify({e: newEmps, s: newSer, j: Object.keys(newJobs).map(function(k){return k + newJobs[k].uAt;}), a: newAlert});
-      if(sig !== lastSig){
-        if(!firstLoad && newAlert && newAlert !== window._seenAlert){
-          notify(newAlert);
-        }
-        window._seenAlert = newAlert;
-        lastSig = sig;
-        emps = newEmps;
-        ser = newSer;
-        jobs = newJobs;
-        refreshUI();
-        render();
-      }
-      firstLoad = false;
-    })
-    .catch(function(){
-      document.getElementById("syncStatus").textContent = "OFFLINE / RETRYING";
-      document.getElementById("syncStatus").style.background = "#dc2626";
-    });
-}
-
-setInterval(syncLoop, 2500);
-syncLoop();
-
+function push(path,val){return fetch(DB+path+".json",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(val)})}
 function refreshUI(){
-  document.getElementById("serBadge").textContent = "Next: JC-" + ser;
-  var s = document.getElementById("empSel");
-  var cur = s.value;
-  s.innerHTML = "";
-  emps.forEach(function(e, i){
-    var o = document.createElement("option");
-    o.value = e;
-    o.textContent = (i + 1) + ". " + e;
-    s.appendChild(o);
-  });
-  if(cur) s.value = cur;
+  document.getElementById("serBadge").textContent="Next: JC-"+ser;
+  var s=document.getElementById("empSel"),cur=s.value;s.innerHTML="";
+  emps.forEach(function(e,i){var o=document.createElement("option");o.value=e;o.textContent=(i+1)+". "+e;s.appendChild(o)});
+  if(cur)s.value=cur;
 }
-
 function openAdm(){
-  if(prompt("Reknaaz Password:") !== PASS) return alert("Access Denied — Only Reknaaz can access.");
-  isAdmin = true;
-  var c = document.getElementById("empList");
-  c.innerHTML = "";
-  for(var i = 0; i < 13; i++){
-    c.innerHTML += '<div class="fld"><label>Staff ' + (i + 1) + '</label><input id="e_' + i + '" value="' + (emps[i] || "") + '"></div>';
-  }
-  document.getElementById("adminBox").style.display = "block";
-  render();
+  if(prompt("Reknaaz Password:")!==PASS)return alert("Access Denied — Only Reknaaz can access.");
+  isAdmin=true;var c=document.getElementById("empList");c.innerHTML="";
+  for(var i=0;i<13;i++)c.innerHTML+='<div class="fld"><label>Staff '+(i+1)+'</label><input id="e_'+i+'" value="'+(emps[i]||"")+'"></div>';
+  document.getElementById("adminBox").style.display="block";render();
 }
-
-function closeAdm(){
-  isAdmin = false;
-  document.getElementById("adminBox").style.display = "none";
-  render();
-}
-
+function closeAdm(){isAdmin=false;document.getElementById("adminBox").style.display="none";render()}
 function saveEmp(){
-  for(var i = 0; i < 13; i++){
-    emps[i] = document.getElementById("e_" + i).value.trim() || ("Emp " + (i + 1));
-  }
-  dbPut("/npData/emps", emps).then(function(){
-    refreshUI();
-    alert("13 Employee names saved across all computers!");
-  });
+  for(var i=0;i<13;i++)emps[i]=document.getElementById("e_"+i).value.trim()||("Emp "+(i+1));
+  push("/emps",emps).then(function(){refreshUI();alert("13 Employee names saved across all devices!")});
 }
-
-function resetSer(){
-  if(confirm("Reset serial to JC-1001?")){
-    ser = 1001;
-    dbPut("/npData/ser", 1001).then(refreshUI);
+function resetSer(){if(confirm("Reset serial to JC-1001?")){ser=1001;push("/ser",1001).then(refreshUI)}}
+document.getElementById("jForm").onsubmit=function(e){
+  e.preventDefault();var f=document.getElementById("fAtt").files.item(0);
+  if(f&&f.size>1500000)return alert("File must be under 1.5 MB.");
+  function add(fd,fn,ft){
+    var t=document.getElementById("jType").value,inv=document.getElementById("invNo").value.trim(),now=new Date().toLocaleString(),no="JC-"+ser,id="j_"+Date.now();
+    var ph=document.getElementById("cPhone").value.replace(/[^0-9]/g,"");if(ph.length===8||ph.length===7)ph="230"+ph;
+    jobs[id]={no:no,type:t,by:document.getElementById("bySec").value,emp:document.getElementById("empSel").value,inv:inv,noInv:!inv,ctp:t==="Offset",dig:t==="Digital",prd:false,del:false,done:false,cname:document.getElementById("cName").value,cphone:ph,title:document.getElementById("jTitle").value,ddate:document.getElementById("dDate").value,paper:document.getElementById("paper").value,qty:document.getElementById("qty").value,specs:document.getElementById("specs").value,notes:document.getElementById("notes").value,fd:fd||"",fn:fn||"",ft:ft||"",cAt:now,uAt:now};
+    ser++;lastSig=JSON.stringify(jobs);
+    Promise.all([push("/jobs/"+id,jobs[id]),push("/ser",ser)]).then(function(){refreshUI();render();e.target.reset();notify(no+" sent to "+(t==="Offset"?"CTP":"Digital Queue")+"!")});
   }
-}
-
-document.getElementById("jForm").onsubmit = function(e){
-  e.preventDefault();
-  var btn = document.getElementById("subBtn");
-  var f = document.getElementById("fAtt").files.item(0);
-  if(f && f.size > 1600000){
-    return alert("Please attach a PDF or JPG smaller than 1.5 MB so it syncs fast across all computers.");
-  }
-  btn.disabled = true;
-  btn.textContent = "Sending...";
-
-  function add(fd, fn, ft){
-    var t = document.getElementById("jType").value;
-    var inv = document.getElementById("invNo").value.trim();
-    var now = new Date().toLocaleString();
-    var no = "JC-" + ser;
-    var ph = document.getElementById("cPhone").value.replace(/[^0-9]/g, "");
-    if(ph.length === 8 || ph.length === 7) ph = "230" + ph;
-    var id = "j_" + Date.now();
-    var item = {
-      no: no, type: t, by: document.getElementById("bySec").value, emp: document.getElementById("empSel").value,
-      inv: inv, noInv: !inv, ctp: t === "Offset", dig: t === "Digital", prd: false, del: false, done: false,
-      cname: document.getElementById("cName").value, cphone: ph, title: document.getElementById("jTitle").value,
-      ddate: document.getElementById("dDate").value, paper: document.getElementById("paper").value,
-      qty: document.getElementById("qty").value, specs: document.getElementById("specs").value,
-      notes: document.getElementById("notes").value, fd: fd || "", fn: fn || "", ft: ft || "", cAt: now, uAt: now
-    };
-    var nextSer = ser + 1;
-    var alertTxt = no + " created by " + item.by + " -> Sent to " + (t === "Offset" ? "CTP (Plates)" : "Digital Queue") + (!inv ? " + Finance (No Invoice)" : "");
-    window._seenAlert = alertTxt;
-    Promise.all([
-      dbPut("/npData/jobs/" + id, item),
-      dbPut("/npData/ser", nextSer),
-      dbPut("/npData/lastAlert", alertTxt)
-    ]).then(function(){
-      btn.disabled = false;
-      btn.textContent = "+ Save & Send Job Card";
-      e.target.reset();
-      notify(alertTxt);
-      syncLoop();
-    });
-  }
-
-  if(f){
-    var r = new FileReader();
-    r.onload = function(v){ add(v.target.result, f.name, f.type); };
-    r.readAsDataURL(f);
-  }else{
-    add();
-  }
+  if(f){var r=new FileReader();r.onload=function(v){add(v.target.result,f.name,f.type)};r.readAsDataURL(f)}else add();
 };
-
-function act(id, updates, msg){
-  updates.uAt = new Date().toLocaleString();
-  var alertTxt = jobs[id].no + " (" + jobs[id].cname + "): " + msg;
-  window._seenAlert = alertTxt;
-  Promise.all([
-    dbPatch("/npData/jobs/" + id, updates),
-    dbPut("/npData/lastAlert", alertTxt)
-  ]).then(function(){
-    notify(alertTxt);
-    syncLoop();
-  });
+function act(id,fn,msg){
+  fn(jobs[id]);jobs[id].uAt=new Date().toLocaleString();lastSig=JSON.stringify(jobs);
+  push("/jobs/"+id,jobs[id]).then(function(){render();if(msg)notify(jobs[id].no+": "+msg)});
 }
-
-function addInv(id){
-  var v = prompt("Enter Invoice #:");
-  if(v && v.trim()){
-    act(id, {inv: v.trim(), noInv: false}, "Invoice " + v.trim() + " added by Finance");
-  }
-}
-
+function addInv(id){var v=prompt("Enter Invoice #:");if(v)act(id,function(j){j.inv=v.trim();j.noInv=false},"Invoice "+v.trim()+" added")}
 function delJob(id){
-  if(!isAdmin) return alert("Only Reknaaz can delete job cards.");
-  if(confirm("Delete card " + jobs[id].no + "?")){
-    dbDelete("/npData/jobs/" + id).then(syncLoop);
-  }
+  if(!isAdmin)return alert("Only Reknaaz can delete.");
+  if(confirm("Delete "+jobs[id].no+"?")){var no=jobs[id].no;delete jobs[id];lastSig=JSON.stringify(jobs);fetch(DB+"/jobs/"+id+".json",{method:"DELETE"}).then(function(){render();notify(no+" deleted")})}
 }
-
-function setTab(t, b){
-  tab = t;
-  document.querySelectorAll(".tab").forEach(function(x){ x.classList.remove("active"); });
-  b.classList.add("active");
-  render();
+function setTab(t,b){tab=t;document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active")});b.classList.add("active");render()}
+function cardHTML(id,j){
+  var st=j.ctp?"CTP (Plates)":j.dig?"Digital Queue":j.prd?"Production":j.del?"Ready for Delivery":"Delivered";
+  var att=j.fd?(j.ft.indexOf("image")>-1?'<div class="att"><a href="'+j.fd+'" download="'+j.fn+'">JPG: '+j.fn+'</a><img src="'+j.fd+'"></div>':'<div class="att"><a href="'+j.fd+'" target="_blank" download="'+j.fn+'">PDF: '+j.fn+'</a></div>'):"";
+  var msg=encodeURIComponent("Hello "+j.cname+", your order "+j.no+" ("+j.title+") is ready for delivery.");
+  var delBtn=isAdmin?'<button class="ab" style="background:#dc2626;margin-left:auto" onclick="delJob(\''+id+'\')">Delete</button>':"";
+  var btns=(j.noInv?'<button class="ab" style="background:#2563eb" onclick="addInv(\''+id+'\')">+ Add Invoice</button>':"")+(j.ctp?'<button class="ab" style="background:#059669" onclick="act(\''+id+'\',function(x){x.ctp=false;x.prd=true},\'Plates Ready -> Production\')">Plates Ready -> Production</button>':"")+(j.dig?'<button class="ab" style="background:#2563eb" onclick="act(\''+id+'\',function(x){x.dig=false;x.prd=true},\'Sent to Production\')">To Production -></button><button class="ab" style="background:#7e22ce" onclick="act(\''+id+'\',function(x){x.dig=false;x.del=true},\'Digital Finish -> Delivery\')">Work Finish -> Delivery</button>':"")+(j.prd?'<button class="ab" style="background:#059669" onclick="act(\''+id+'\',function(x){x.prd=false;x.del=true},\'Production Finish -> Delivery\')">Send to Delivery -></button>':"")+(j.del?'<a class="ab" style="background:#16a34a" href="https://wa.me+'" target="_blank">WhatsApp</a><a class="ab" style="background:#0284c7" href="sms:+'+j.cphone+'?body='+msg+'">SMS</a><a class="ab" style="background:#475569" href="tel:+'+j.cphone+'">Call</a><button class="ab" style="background:#059669" onclick="act(\''+id+'\',function(x){x.del=false;x.done=true},\'Order Delivered!\')">Delivered</button>':"");
+  return '<div class="card '+(j.type==="Digital"?"dig":"")+'"><div class="chdr"><span>'+j.no+' — '+j.cname+'</span><span>'+j.type+'</span></div><div><span class="pill">'+st+'</span>'+(j.noInv?'<span class="pill red">Finance: No Invoice</span>':'')+'</div><p><b>Job:</b> '+j.title+'</p><p><b>Delivery Date:</b> '+j.ddate+' | <b>Tel:</b> +'+j.cphone+'</p><p><b>Invoice:</b> '+(j.inv||"Pending")+' | <b>Staff:</b> '+j.emp+' ('+j.by+')</p><p><b>Paper:</b> '+(j.paper||"-")+' | <b>Qty/Size:</b> '+(j.qty||"-")+'</p><p><b>Specs:</b> '+(j.specs||"-")+'</p><p><b>Notes:</b> '+(j.notes||"-")+'</p>'+att+'<div class="ts">Created: '+j.cAt+' | Updated: '+j.uAt+'</div><div class="acts">'+btns+'<button class="ab" style="background:#64748b" onclick="window.print()">Print</button>'+delBtn+'</div></div>';
 }
-
-function cardHTML(id, j){
-  var st = j.ctp ? "CTP (Plates)" : j.dig ? "Digital Queue" : j.prd ? "Production" : j.del ? "Ready for Delivery" : "Delivered";
-  var att = j.fd ? (j.ft.indexOf("image") > -1 ? '<div class="att"><a href="' + j.fd + '" download="' + j.fn + '">JPG: ' + j.fn + '</a><img src="' + j.fd + '"></div>' : '<div class="att"><a href="' + j.fd + '" target="_blank" download="' + j.fn + '">PDF: ' + j.fn + '</a></div>') : "";
-  var msg = encodeURIComponent("Hello " + j.cname + ", your order " + j.no + " (" + j.title + ") from Northern Printing is ready for delivery.");
-  var delBtn = isAdmin ? '<button class="ab" style="background:#dc2626;margin-left:auto" onclick="delJob('' + id + '')">Delete (Reknaaz)</button>' : "";
-  var btns =
-    (j.noInv ? '<button class="ab" style="background:#2563eb" onclick="addInv('' + id + '')">+ Add Invoice</button>' : "") +
-    (j.ctp ? '<button class="ab" style="background:#059669" onclick="act('' + id + '',{ctp:false,prd:true},'Plates Ready -> Sent to Production')">Plates Ready -> Production</button>' : "") +
-    (j.dig ? '<button class="ab" style="background:#2563eb" onclick="act('' + id + '',{dig:false,prd:true},'Sent to Production')">To Production -></button><button class="ab" style="background:#7e22ce" onclick="act('' + id + '',{dig:false,del:true},'Digital Work Finished -> Sent to Delivery')">Work Finish -> Delivery</button>' : "") +
-    (j.prd ? '<button class="ab" style="background:#059669" onclick="act('' + id + '',{prd:false,del:true},'Production Finished -> Sent to Delivery')">Send to Delivery -></button>' : "") +
-    (j.del ? '<a class="ab" style="background:#16a34a" href="https://wa.me/' + j.cphone + '?text=' + msg + '" target="_blank">WhatsApp</a><a class="ab" style="background:#0284c7" href="sms:+' + j.cphone + '?body=' + msg + '">SMS</a><a class="ab" style="background:#475569" href="tel:+' + j.cphone + '">Call</a><button class="ab" style="background:#059669" onclick="act('' + id + '',{del:false,done:true},'Order Delivered!')">Delivered</button>' : "");
-
-  return '<div class="card ' + (j.type === "Digital" ? "dig" : "") + '"><div class="chdr"><span>' + j.no + ' — ' + j.cname + '</span><span>' + j.type + '</span></div><div><span class="pill">' + st + '</span>' + (j.noInv ? '<span class="pill red">Finance: No Invoice</span>' : '') + '</div><p><b>Job:</b> ' + j.title + '</p><p><b>Delivery Date:</b> ' + j.ddate + ' | <b>Tel:</b> +' + j.cphone + '</p><p><b>Invoice:</b> ' + (j.inv || "Pending") + ' | <b>Staff:</b> ' + j.emp + ' (' + j.by + ')</p><p><b>Paper:</b> ' + (j.paper || "-") + ' | <b>Qty/Size:</b> ' + (j.qty || "-") + '</p><p><b>Specs:</b> ' + (j.specs || "-") + '</p><p><b>Notes:</b> ' + (j.notes || "-") + '</p>' + att + '<div class="ts">Created: ' + j.cAt + ' | Updated: ' + j.uAt + '</div><div class="acts">' + btns + '<button class="ab" style="background:#64748b" onclick="window.print()">Print</button>' + delBtn + '</div></div>';
-}
-
 function render(){
-  var w = document.getElementById("wrap");
-  w.innerHTML = "";
-  var list = Object.keys(jobs).reverse().filter(function(id){
-    var j = jobs[id];
-    if(!j) return false;
-    if(tab === "ALL") return !j.done || j.noInv;
-    if(tab === "FIN") return j.noInv;
-    if(tab === "CTP") return j.ctp;
-    if(tab === "DIG") return j.dig;
-    if(tab === "PRD") return j.prd;
-    if(tab === "DEL") return j.del;
-    if(tab === "DONE") return j.done;
-  });
-  if(tab === "DEL"){
-    var grp = {};
-    list.forEach(function(id){
-      var d = jobs[id].ddate || "No Date";
-      (grp[d] = grp[d] || []).push(id);
-    });
-    Object.keys(grp).sort().forEach(function(d){
-      w.innerHTML += '<div class="dt-hdr">Delivery Date: ' + d + ' (' + grp[d].length + ' Jobs)</div><div class="cards">' + grp[d].map(function(id){ return cardHTML(id, jobs[id]); }).join("") + '</div>';
-    });
-    return;
-  }
-  w.innerHTML = '<div class="cards">' + list.map(function(id){ return cardHTML(id, jobs[id]); }).join("") + '</div>';
+  var w=document.getElementById("wrap");w.innerHTML="";
+  var list=Object.keys(jobs).reverse().filter(function(id){var j=jobs[id];if(tab==="ALL")return !j.done||j.noInv;if(tab==="FIN")return j.noInv;if(tab==="CTP")return j.ctp;if(tab==="DIG")return j.dig;if(tab==="PRD")return j.prd;if(tab==="DEL")return j.del;if(tab==="DONE")return j.done});
+  if(tab==="DEL"){var grp={};list.forEach(function(id){var d=jobs[id].ddate||"No Date";(grp[d]=grp[d]||[]).push(id)});Object.keys(grp).sort().forEach(function(d){w.innerHTML+='<div class="dt-hdr">Delivery Date: '+d+' ('+grp[d].length+' Jobs)</div><div class="cards">'+grp[d].map(function(id){return cardHTML(id,jobs[id])}).join("")+'</div>'});return}
+  w.innerHTML='<div class="cards">'+list.map(function(id){return cardHTML(id,jobs[id])}).join("")+'</div>';
 }
-
-refreshUI();
+pull();setInterval(pull,2500);
 </script>
 </body>
 </html>
